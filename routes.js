@@ -9,10 +9,12 @@ const router = new express.Router();
 
 /** Homepage: show list of customers. */
 
-router.get("/", async function(req, res, next) {
+router.get("/", async function (req, res, next) {
   try {
     const customers = await Customer.all();
-    return res.render("customer_list.html", { customers });
+    return res.render("customer_list.html", {
+      customers
+    });
   } catch (err) {
     return next(err);
   }
@@ -20,7 +22,7 @@ router.get("/", async function(req, res, next) {
 
 /** Search Post: redirects to list of search results on search */
 
-router.post("/search", function(req, res, next) {
+router.post("/search", function (req, res, next) {
   try {
     let searchVal = req.body.customer;
     return res.redirect(`/search/${searchVal}`)
@@ -31,10 +33,12 @@ router.post("/search", function(req, res, next) {
 
 /** Search Results: show list of customers according to search params */
 
-router.get("/search/:query", async function(req, res, next) {
+router.get("/search/:query", async function (req, res, next) {
   try {
     const customers = await Customer.search(req.params.query);
-    return res.render("customer_list.html", { customers });
+    return res.render("customer_list.html", {
+      customers
+    });
   } catch (err) {
     return next(err);
   }
@@ -42,7 +46,7 @@ router.get("/search/:query", async function(req, res, next) {
 
 /** Form to add a new customer. */
 
-router.get("/add/", async function(req, res, next) {
+router.get("/add/", async function (req, res, next) {
   try {
     return res.render("customer_new_form.html");
   } catch (err) {
@@ -52,14 +56,19 @@ router.get("/add/", async function(req, res, next) {
 
 /** Handle adding a new customer. */
 
-router.post("/add/", async function(req, res, next) {
+router.post("/add/", async function (req, res, next) {
   try {
     const firstName = req.body.firstName;
     const lastName = req.body.lastName;
     const phone = req.body.phone;
     const notes = req.body.notes;
 
-    const customer = new Customer({ firstName, lastName, phone, notes });
+    const customer = new Customer({
+      firstName,
+      lastName,
+      phone,
+      notes
+    });
     await customer.save();
 
     return res.redirect(`/${customer.id}/`);
@@ -68,15 +77,31 @@ router.post("/add/", async function(req, res, next) {
   }
 });
 
+/** Handle best customer query */
+
+router.get("/best/", async function (req, res, next) {
+  try {
+    bestCustomers = await Customer.getBest();
+    res.render('best.html', {
+      bestCustomers
+    });
+  } catch (err) {
+    return next(err);
+  };
+});
+
 /** Show a customer, given their ID. */
 
-router.get("/:id/", async function(req, res, next) {
+router.get("/:id/", async function (req, res, next) {
   try {
     const customer = await Customer.get(req.params.id);
 
     const reservations = await customer.getReservations();
 
-    return res.render("customer_detail.html", { customer, reservations });
+    return res.render("customer_detail.html", {
+      customer,
+      reservations
+    });
   } catch (err) {
     return next(err);
   }
@@ -84,11 +109,13 @@ router.get("/:id/", async function(req, res, next) {
 
 /** Show form to edit a customer. */
 
-router.get("/:id/edit/", async function(req, res, next) {
+router.get("/:id/edit/", async function (req, res, next) {
   try {
     const customer = await Customer.get(req.params.id);
 
-    res.render("customer_edit_form.html", { customer });
+    res.render("customer_edit_form.html", {
+      customer
+    });
   } catch (err) {
     return next(err);
   }
@@ -96,7 +123,7 @@ router.get("/:id/edit/", async function(req, res, next) {
 
 /** Handle editing a customer. */
 
-router.post("/:id/edit/", async function(req, res, next) {
+router.post("/:id/edit/", async function (req, res, next) {
   try {
     const customer = await Customer.get(req.params.id);
     customer.firstName = req.body.firstName;
@@ -113,7 +140,7 @@ router.post("/:id/edit/", async function(req, res, next) {
 
 /** Handle adding a new reservation. */
 
-router.post("/:id/add-reservation/", async function(req, res, next) {
+router.post("/:id/add-reservation/", async function (req, res, next) {
   try {
     const customerId = req.params.id;
     const startAt = new Date(req.body.startAt);
@@ -133,5 +160,7 @@ router.post("/:id/add-reservation/", async function(req, res, next) {
     return next(err);
   }
 });
+
+
 
 module.exports = router;

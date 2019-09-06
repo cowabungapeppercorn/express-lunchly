@@ -29,6 +29,25 @@ class Customer {
     return results.rows.map(c => new Customer(c));
   }
 
+
+  /** Find best customer */
+
+  static async getBest() {
+    const results = await db.query(
+      `SELECT customers.id, 
+      customers.first_name AS "firstName",  
+      customers.last_name AS "lastName"
+    FROM customers
+    JOIN reservations
+      ON customers.id = reservations.customer_id
+    GROUP BY customers.id
+    ORDER BY COUNT(reservations) DESC
+    LIMIT 10;`
+    );
+    console.log(results);
+    return results.rows.map(row => new Customer(row));
+  }
+  
   /** get a customer by ID. */
 
   static async get(id) {
@@ -63,8 +82,10 @@ class Customer {
          phone, 
          notes
        FROM customers
-       WHERE first_name=$1
-       ORDER BY last_name, first_name`, [query]
+       WHERE LOWER( first_name ) LIKE $1
+       OR
+       LOWER( last_name ) LIKE $1
+       ORDER BY last_name, first_name`, ['%' + query.toLowerCase() + '%']
     );
     return results.rows.map(c => new Customer(c));
   }
